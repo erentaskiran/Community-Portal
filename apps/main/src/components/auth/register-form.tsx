@@ -56,37 +56,40 @@ export function RegisterForm() {
     },
   })
 
-  async function onSubmit(data: RegisterFormValues) {
+  async function onSubmit(Values: RegisterFormValues) {
     setIsLoading(true)
     setError(null)
     setSuccessMessage(null)
 
     try {
-      // Supabase Register
-      const userID = await signUp(data.mail, data.sifre)
+      const userID = await signUp(Values.mail, Values.sifre)
+      console.log(userID)
+
       if (!userID) {
-        setError('Kayıt işlemi sırasında bir hata oluştu.')
-        return
+        throw new Error('Kayıt işlemi sırasında bir hata oluştu.')
       }
+
       // API Register
-      const response = await MakeRequest('/api/user', 'POST', {
-        first_name: data.isim,
-        last_name: data.soyisim,
-        school_number: data.ogrenciNo,
-        telephone_number: data.telefonNo,
-        email: data.mail,
+      const res = await MakeRequest('/api/user', 'POST', {
+        first_name: Values.isim,
+        last_name: Values.soyisim,
+        school_number: Values.ogrenciNo,
+        telephone_number: Values.telefonNo,
+        email: Values.mail,
       })
-      if (!response || response.error) {
-        await supabase.auth.admin.deleteUser(userID)
-        throw new Error(response?.error || 'Sunucu hatası oluştu.')
+      console.log(res)
+
+      if (res instanceof Error) {
+        await supabase.auth.admin.deleteUser(userID || '')
+        throw new Error(res.message)
       }
+
       setSuccessMessage('Kayıt başarılı! Giriş sayfasına yönlendiriliyorsunuz...')
       setTimeout(() => {
         router.push('/login')
       }, 2000)
     } catch (error) {
-      setError((error as Error).message || 'Kayıt sırasında bir hata oluştu.')
-      console.error(error)
+      setError((error as any).message || 'Kayıt sırasında bir hata oluştu.')
     } finally {
       setIsLoading(false)
     }

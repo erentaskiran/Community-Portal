@@ -10,7 +10,7 @@ export async function MakeRequest(
   const accessToken = data.session?.access_token
 
   if (!accessToken) {
-    throw new Error('User is not authenticated')
+    return new Error('Yetkisiz işlem.')
   }
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
@@ -24,7 +24,7 @@ export async function MakeRequest(
   })
 
   if (!response.ok) {
-    throw new Error(`API request failed: ${response.statusText}`)
+    return new Error('Bir hata oluştu.')
   }
   return response.json()
 }
